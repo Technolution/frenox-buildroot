@@ -1,0 +1,8 @@
+config BR2_ARCH
+	default "riscv32"
+
+config BR2_ENDIAN
+	default "LITTLE"
+
+#config BR2_GCC_TARGET_ARCH
+#	default "riscv32"
