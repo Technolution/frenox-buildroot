@@ -1,0 +1,12 @@
+# Ignore everything...
+*
+
+# Then include just this.
+!arch/Config.in.riscv
+!arch/Config.in
+!.gitignore
+!.config
+
+# The arch/.gitignore and arch/riscv/.gitignore have patterns to un-ignore the
+# appropriate files.
+
