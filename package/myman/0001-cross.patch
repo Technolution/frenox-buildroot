@@ -1,0 +1,13 @@
+--- a/simple.mk   2016-12-25 13:02:48.897659604 +0100
++++ b/simple.mk   2009-10-30 19:07:50.000000000 +0100
+@@ -41,8 +41,8 @@
+ # -m/-s/-t command line parameters.
+
+ # ansi C compiler
+-CC=cc
+-#CC=gcc
++CROSS?=
++CC=$(CROSS)gcc
+
+ # curses library
+ CURSESLIBS=-lcurses
