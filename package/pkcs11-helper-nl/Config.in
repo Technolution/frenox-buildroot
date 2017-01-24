@@ -1,0 +1,5 @@
+config BR2_PACKAGE_PKCS11_HELPER_NL
+	bool "pkcs11-helper-nl"
+	help
+	  Copied from Fox-It
+
