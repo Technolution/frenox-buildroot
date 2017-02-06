@@ -1,0 +1,16 @@
+disable pkcs11-helper
+
+
+---
+diff -purN  polarssl-nl-1.2.19-1/include/polarssl/config_orig.h polarssl-nl-1.2.19-1/include/polarssl/config.h
+--- polarssl-nl-1.2.19-1/include/polarssl/config_orig.h 2016-02-09 20:07:23.000000000 +0100
++++ polarssl-nl-1.2.19-1/include/polarssl/config.h      2017-02-06 09:58:14.882716421 +0100
+@@ -801,7 +801,7 @@
+  * This module enables SSL/TLS PKCS #11 smartcard support.
+  * Requires the presence of the PKCS#11 helper library (libpkcs11-helper)
+  */
+-#define POLARSSL_PKCS11_C
++//#define POLARSSL_PKCS11_C
+
+ /**
+  * \def POLARSSL_PKCS12_C
