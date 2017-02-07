@@ -1,0 +1,78 @@
+Remove some libraries to prevent openvpn-nl from crashing on Frenox
+
+diff -uNr configure_org.ac configure.ac
+--- a/configure_org.ac	2017-02-06 16:38:20.851073172 +0100
++++ b/configure.ac	2017-02-06 16:39:43.524055829 +0100
+@@ -584,39 +584,39 @@
+ 	epoll_create \
+ ])
+ 
+-AC_CHECK_LIB(
+-	[dl],
+-	[dlopen],
+-	[DL_LIBS="-ldl"]
+-)
+-AC_SUBST([DL_LIBS])
+-
+-if test -z "${WIN32}"; then
+-AC_CHECK_LIB(
+-	[rt],
+-	[clock_gettime],
+-	[RT_LIBS="-lrt"],
+-    [AC_MSG_ERROR([Could not find clock_gettime])]
+-)
+-AC_SUBST([RT_LIBS])
+-fi
+-
+-AC_CHECK_LIB(
+-	[nsl],
+-	[inet_ntoa],
+-	[SOCKETS_LIBS="${SOCKETS_LIBS} -lnsl"]
+-)
+-AC_CHECK_LIB(
+-	[socket],
+-	[socket],
+-	[SOCKETS_LIBS="${SOCKETS_LIBS} -lsocket"]
+-)
+-AC_CHECK_LIB(
+-	[resolv],
+-	[gethostbyname],
+-	[SOCKETS_LIBS="${SOCKETS_LIBS} -lresolv"]
+-)
+-AC_SUBST([SOCKETS_LIBS])
++#AC_CHECK_LIB(
++#	[dl],
++#	[dlopen],
++#	[DL_LIBS="-ldl"]
++#)
++#AC_SUBST([DL_LIBS])
++#
++#if test -z "${WIN32}"; then
++#AC_CHECK_LIB(
++#	[rt],
++#	[clock_gettime],
++#	[RT_LIBS="-lrt"],
++#    [AC_MSG_ERROR([Could not find clock_gettime])]
++#)
++#AC_SUBST([RT_LIBS])
++#fi
++#
++#AC_CHECK_LIB(
++#	[nsl],
++#	[inet_ntoa],
++#	[SOCKETS_LIBS="${SOCKETS_LIBS} -lnsl"]
++#)
++#AC_CHECK_LIB(
++#	[socket],
++#	[socket],
++#	[SOCKETS_LIBS="${SOCKETS_LIBS} -lsocket"]
++#)
++#AC_CHECK_LIB(
++#	[resolv],
++#	[gethostbyname],
++#	[SOCKETS_LIBS="${SOCKETS_LIBS} -lresolv"]
++#)
++#AC_SUBST([SOCKETS_LIBS])
+ 
+ old_LIBS="${LIBS}"
+ LIBS="${LIBS} ${SOCKETS_LIBS}"

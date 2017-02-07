@@ -1,0 +1,29 @@
+Skip gathering entropy, this will last forever on frenox
+
+---
+diff -purN openvpn-nl-2.3.9/src/openvpn/crypto_polarssl_orig.c openvpn-nl-2.3.9/src/openvpn/crypto_polarssl.c
+--- openvpn-nl-2.3.9/src/openvpn/crypto_polarssl_orig.c 2017-02-06 11:18:36.122037021 +0100
++++ openvpn-nl-2.3.9/src/openvpn/crypto_polarssl.c      2017-02-06 11:19:11.416680400 +0100
+@@ -221,6 +221,8 @@ int entropy_gather_blocking(entropy_cont
+   for (i = 0; i < 10; ++i)
+     if (entropy_gather(ec) != 0)
+       return 0;
++  msg(M_INFO, "INFO: Skip gathering entropy");
++  return 0;
+   /* If not enough entropy has been gathered, wait for more entropy */
+   if (entropy_threshold_check(ec) != 0)
+     {
+@@ -318,9 +320,10 @@ void rand_ctx_init_platform_entropy(int
+
+       if (0 != entropy_add_source(ec, f_source, NULL, min_size))
+         msg (M_FATAL, "Failed to add platform source to entropy pool");
+-      if (!rand_ctx_reseed())
+-        msg (M_FATAL, "ERROR: Random number generator failed to obtain entropy to reseed");
+-
++      if (!rand_ctx_reseed()) {
++        //msg (M_FATAL, "ERROR: Random number generator failed to obtain entropy to reseed");
++        msg (M_INFO, "ERROR: Random number generator failed to obtain entropy to reseed. ERROR SKIPPED");
++      }
+       platform_set = true;
+     }
+ }

@@ -14,15 +14,13 @@ OPENVPN_NL_AUTORECONF = YES
 OPENVPN_NL_CONF_OPTS = \
 	--disable-plugin-auth-pam \
 	--enable-iproute2 \
-	--with-crypto-library=polarssl 
-#	--enable-pkcs11
+	--with-crypto-library=polarssl \
+    --disable-plugins \
+    --disable-lzo
 
 OPENVPN_NL_CONF_ENV = IFCONFIG=/sbin/ifconfig \
 	NETSTAT=/bin/netstat \
 	ROUTE=/sbin/route 
-
-#	$(if $(BR2_STATIC_LIBS),--disable-plugins)
-#    PKCS11_HELPER_LIBS=libpkcs11-helper
 
 
 # BusyBox 1.21+ places the ip applet in the "correct" place
@@ -34,7 +32,6 @@ OPENVPN_NL_CONF_ENV += IPROUTE=/bin/ip
 else
 OPENVPN_NL_CONF_ENV += IPROUTE=/sbin/ip
 endif
-
 
 define OPENVPN_NL_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 755 $(@D)/src/openvpn/openvpn \
