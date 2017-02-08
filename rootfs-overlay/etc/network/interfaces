@@ -7,3 +7,9 @@ iface frenox_eth0 inet static
     netmask 255.255.255.0
     gateway 192.168.1.1
     dns-nameservers 172.16.1.20,172.16.1.21
+
+auto frenox_eth1
+iface frenox_eth1 inet static
+    address 192.168.2.55
+    netmask 255.255.255.0
+    hwaddress ether 12:34:56:12:34:56
