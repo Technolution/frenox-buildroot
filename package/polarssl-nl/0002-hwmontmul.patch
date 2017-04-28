@@ -1,0 +1,142 @@
+--- a/library/bignum.c	2016-02-09 20:07:23.000000000 +0100
++++ b/library/bignum.c	2017-04-28 13:45:07.579270577 +0200
+@@ -45,6 +45,9 @@
+ 
+ #include <stdlib.h>
+ 
++#include <fcntl.h>
++#include <sys/mman.h>
++
+ /* Implementation that should never be optimized out by the compiler */
+ static void polarssl_zeroize( void *v, size_t n ) {
+     volatile unsigned char *p = v; while( n-- ) *p++ = 0;
+@@ -1411,10 +1414,47 @@
+     *mm = ~x + 1;
+ }
+ 
++static void mpi_montmul_hw(volatile uint32_t *registers, mpi *A, const mpi *B, const mpi *N, t_uint mm, const mpi *T)
++{
++    for (unsigned i = 0; i < N->n; i++) {
++        registers[(0x800>>2) + i] = N->p[i];
++        if (i < A->n) {
++            registers[(0xa00>>2) + i] = A->p[i];
++        } else {
++            registers[(0xa00>>2) + i] = 0;
++        }
++        if (i < B->n) {
++            registers[(0xc00>>2) + i] = B->p[i];
++        } else {
++            registers[(0xc00>>2) + i] = 0;
++        }
++    }
++
++    registers[6] = mm;
++    registers[4] = (N->n << 16) | 1;
++
++    while ((registers[5] & 1) == 0);
++
++    for (unsigned i = 0; i < A->n; i++) {
++        if (i < N->n + 1) {
++            A->p[i] = registers[(0xe00>>2) + i + 2];
++        } else {
++            A->p[i] = 0;
++        }
++    }
++
++    if( mpi_cmp_abs( A, N ) >= 0 )
++        mpi_sub_hlp( N->n, N->p, A->p );
++//     else
++//         /* prevent timing attacks */
++//         mpi_sub_hlp( N->n, A->p, T->p );
++
++}
++
+ /*
+  * Montgomery multiplication: A = A * B * R^-1 mod N  (HAC 14.36)
+  */
+-static void mpi_montmul( mpi *A, const mpi *B, const mpi *N, t_uint mm, const mpi *T )
++static void mpi_montmul_sw( mpi *A, const mpi *B, const mpi *N, t_uint mm, const mpi *T )
+ {
+     size_t i, n, m;
+     t_uint u0, u1, *d;
+@@ -1449,6 +1489,80 @@
+ }
+ 
+ /*
++ * Montgomery multiplication: A = A * B * R^-1 mod N  (HAC 14.36)
++ */
++static void mpi_montmul( mpi *A, const mpi *B, const mpi *N, t_uint mm, const mpi *T )
++{
++    static int initialized = 0;
++    static volatile uint32_t *registers = MAP_FAILED;
++    static int verify_hw = 0;
++    extern char **environ;
++
++    if (!initialized) {
++        char *device = NULL;
++        for (int i = 0; environ[i]; i++) {
++            if (strncmp(environ[i], "POLARSSL_HW_MONTMUL=", 20) == 0) {
++                device = environ[i] + 20;
++            } else if (strncmp(environ[i], "POLARSSL_HW_MONTMUL_VERIFY=", 27) == 0) {
++                verify_hw = 1;
++            }
++        }
++
++        if (device != NULL) {
++            int fd = open(device, O_RDWR); // NOTE: never closed until program exit
++
++            if (fd <= 0) {
++                fprintf(stderr, "Device not accessible\n");
++                exit(-1);
++            }
++
++            registers = mmap(NULL, 0x1000, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
++            if (registers == MAP_FAILED) {
++                fprintf(stderr, "Device not accessible (mmap failed)\n");
++                exit(-1);
++            }
++
++            // sync hw
++            while ((registers[5] & 1) == 0);
++
++            fprintf(stderr, "Using montmul hardware accelerator (%s)\n", device);
++            if (verify_hw) fprintf(stderr, "    (hw verification mode)\n");
++        }
++
++        initialized = 1;
++    }
++
++    if (registers != MAP_FAILED && A->n < 254 && B->n < 254 && N->n < 254) {
++        // use hardware accelerator
++
++        mpi A2;
++        if (verify_hw) {
++            mpi_init(&A2);
++            mpi_grow(&A2, A->n);
++            mpi_copy(&A2, A);
++            mpi_montmul_sw(&A2, B, N, mm, T);
++        }
++
++        mpi_montmul_hw(registers, A, B, N, mm, T);
++
++        if (verify_hw) {
++            int errors = 0;
++            for (unsigned i = 0; i < A->n; i++) {
++                if (A->p[i] != A2.p[i]) errors++;
++            }
++            mpi_free(&A2);
++
++            if (errors) {
++                fprintf(stderr, "Errors in HW verification");
++            }
++        }
++    } else {
++        // use software implementation
++        mpi_montmul_sw(A, B, N, mm, T);
++    }
++}
++
++/*
+  * Montgomery reduction: A = A * R^-1 mod N
+  */
+ static void mpi_montred( mpi *A, const mpi *N, t_uint mm, const mpi *T )

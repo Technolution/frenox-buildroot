@@ -15,8 +15,6 @@ config BR2_PACKAGE_POLARSSL_NL
 
 	  https://tls.mbed.org/
 
-	  Harry was here
-
 if BR2_PACKAGE_POLARSSL_NL
 
 config BR2_PACKAGE_POLARSSL_NL_PROGRAMS
