@@ -300,7 +300,7 @@ config BR2_TOOLCHAIN_GCC_AT_LEAST_6
 
 config BR2_TOOLCHAIN_GCC_AT_LEAST_7
 	bool
-	select BR2_TOOLCHAIN_GCC_AT_LEAST_7
+	select BR2_TOOLCHAIN_GCC_AT_LEAST_6
 
 # This order guarantees that the highest version is set, as kconfig
 # stops affecting a value on the first matching default.
